@@ -19,7 +19,7 @@ public class PlayerMoveMent : MonoSingleton<PlayerMoveMent>
 
     private void Start()
     {
-        pixelPos = Vector2Int.one;
+        //pixelPos = Vector2Int.one;
         moveX = Camera.main.pixelWidth;
         moveY = Camera.main.pixelHeight;
         StartCoroutine(nameof(BackMove));
@@ -51,35 +51,34 @@ public class PlayerMoveMent : MonoSingleton<PlayerMoveMent>
 
             if (moveVecList.Count > 0)
             {
+                Debug.Log(PixelManager.Instance.nodeArray[pixelPos.x, pixelPos.y]);
+                if (pixelPos.x + moveVecList[^1].x >= moveX || pixelPos.y + moveVecList[^1].y >= moveY || pixelPos.x + moveVecList[^1].x <= -1 || pixelPos.y + moveVecList[^1].y <= -1) return;
+
                 FillState currentPixel = PixelManager.Instance.GetPixel(pixelPos.x, pixelPos.y);
                 FillState nextPixel = PixelManager.Instance.GetPixel(pixelPos.x + moveVecList[^1].x, pixelPos.y + moveVecList[^1].y);
 
-                //Debug.Log($"currentPixel {currentPixel}");
-                //Debug.Log($"nextPixel {nextPixel}");
-
-                if (nextPixel == FillState.None)
+                pastMoveLineList.Add(pixelPos);
+                PixelManager.Instance.SetPixel(pixelPos.x, pixelPos.y, FillState.Past);
+                if (nextPixel != FillState.Fill && nextPixel != FillState.Past)
                 {
-                    pastMoveLineList.Add(pixelPos);
-                    PixelManager.Instance.SetPixel(pixelPos.x, pixelPos.y, FillState.Past);
                     pixelPos += moveVecList[^1];
                     PixelManager.Instance.SetColor(pixelPos.x, pixelPos.y, Color.red);
-                    PixelManager.Instance.SetApply();
                 }
 
                 if (currentPixel == FillState.None)
                 {
-                    if (nextPixel == FillState.Wall)
+                    if (nextPixel == FillState.Wall || nextPixel == FillState.Fill)
                     {
-                        Debug.Log("FloodFill");
                         FloodFillSystem.Instance.FloodFill(pastMoveLineList[^1]);
                         for (int i = 0; i < pastMoveLineList.Count; i++)
                         {
                             PixelManager.Instance.SetColor(pastMoveLineList[i].x, pastMoveLineList[i].y, Color.black);
-                            PixelManager.Instance.SetApply();
                         }
+                        RemoveAllPastMoveList();
                     }
                 }
             }
+            PixelManager.Instance.SetApply();
         }
         WorldPos2PixelPos();
     }
@@ -98,7 +97,7 @@ public class PlayerMoveMent : MonoSingleton<PlayerMoveMent>
             {
                 isBack = true;
 
-                PixelManager.Instance.ResetColor(pixelPos.x, pixelPos.y);
+                PixelManager.Instance.ResetColor(pixelPos.x, pixelPos.y, TextureType.Before);
 
                 if (pastMoveLineList.Count > 0)
                 {
@@ -106,6 +105,7 @@ public class PlayerMoveMent : MonoSingleton<PlayerMoveMent>
                     pastMoveLineList.Remove(pastMoveLineList[^1]);
                 }
                 PixelManager.Instance.SetPixel(pixelPos.x, pixelPos.y, FillState.None);
+                PixelManager.Instance.SetApply();
                 yield return null;
             }
             else

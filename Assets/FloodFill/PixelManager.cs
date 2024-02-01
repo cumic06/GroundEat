@@ -45,15 +45,11 @@ public class PixelManager : MonoSingleton<PixelManager>
         {
             SetPixel(x, 0, FillState.Wall);
             SetPixel(x, GetResolution().y - 1, FillState.Wall);
-            //SetColor(x, 0, Color.white);
-            //SetColor(x, GetResolution().y - 1, Color.white);
         }
         for (int y = 0; y < GetResolution().y - 1; y++)
         {
             SetPixel(0, y, FillState.Wall);
             SetPixel(GetResolution().x - 1, y, FillState.Wall);
-            //SetColor(0, y, Color.white);
-            //SetColor(GetResolution().x - 1, y, Color.white);
         }
     }
 
@@ -87,9 +83,9 @@ public class PixelManager : MonoSingleton<PixelManager>
         cloneTexture.Apply();
     }
 
-    public void ResetColor(int x, int y)
+    public void ResetColor(int x, int y, TextureType resetTexture)
     {
-        Color setColor = GetColor(x, y, TextureType.Before);
+        Color setColor = GetColor(x, y, resetTexture);
         SetColor(x, y, setColor);
     }
     #endregion
@@ -98,7 +94,7 @@ public class PixelManager : MonoSingleton<PixelManager>
     {
         int width = Camera.main.pixelWidth;
         int height = Camera.main.pixelHeight;
-        Vector2Int resuolution = new(width, height);
-        return resuolution;
+        Vector2Int resolution = new(width, height);
+        return resolution;
     }
 }
